@@ -1,6 +1,6 @@
 from App import App
 
-def main():
+def main(): 
     app = App()
     app.iniciar()
 
