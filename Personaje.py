@@ -22,7 +22,7 @@ class Personaje:
         if len(self.episodes)!= 0:
             episodes_string = "Episodios en los que aparece este personaje:\n\n"
             for episode in self.episodes:
-                episodes_string += f"-{episode}\n"
+                episodes_string += f"-{episode.name}\n"
             
             return episodes_string
         else:
@@ -67,6 +67,17 @@ class Personaje:
         {self.naves_str()}
         {self.vehiculos_str()}
         """
+    
+    def mostrar(self):
+        print(f"""
+        - Nombre: {self.name}
+        - Género: {self.gender}
+        - Planeta de origen: {self.homeworld}
+        - Especie: {self.specie}
+        {self.episodes_str()}
+        {self.naves_str()}
+        {self.vehiculos_str()}
+        """)
     
     
     

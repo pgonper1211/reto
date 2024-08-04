@@ -21,7 +21,7 @@ class Especie:
         if len(self.people) != 0:
             personajes_string = "\nPersonajes relacionados con esta especie:\n\n"
             for personaje in self.people:
-                personajes_string += f"-{personaje}\n" 
+                personajes_string += f"-{personaje.name}\n" 
             
             return personajes_string
         else:
@@ -31,7 +31,7 @@ class Especie:
         if len(self.episodes) != 0:
             episodios_string = "Episodios relacionados con esta especie:\n\n"
             for episodio in self.episodes:
-                episodios_string += f"-{episodio}\n" 
+                episodios_string += f"-{episodio.name_film()}\n" 
             
             return episodios_string
         else:
@@ -55,4 +55,16 @@ class Especie:
                         {self.personajes_str()}
                         {self.episoder_str()}    
             """
+
+    def mostrar(self):
+        print(f"""
+            Nombre: {self.name}\n
+            Clasificación: {self.classification}
+            Altura promedio: {self.average_height} mts 
+            Planeta de origen: {self.homeworld} 
+            Lengua: {self.language}
+                        {self.personajes_str()}
+                        {self.episoder_str()} 
+        
+        """)
         

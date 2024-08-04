@@ -20,7 +20,7 @@ class Planeta:
         if len(self.episodes) != 0:
             episodes_string = "Lista de episodios donde aparece el planeta:\n\n"
             for episode in self.episodes:
-                episodes_string += f"-{episode}\n" 
+                episodes_string += f"-{episode.name_film()}\n" 
             
             return episodes_string
         else:
@@ -30,7 +30,7 @@ class Planeta:
         if len(self.personajes) != 0:
             personajes_string = "Lista de personajes de este planeta:\n\n"
             for personaje in self.personajes:
-                personajes_string += f"-{personaje}\n" 
+                personajes_string += f"-{personaje.name}\n" 
             
             return personajes_string
         else:
@@ -62,6 +62,7 @@ class Planeta:
         - Período orbital: {self.orbital_period} días
         - Población: {self.population}
         - Clima: {self.climate}
+        - URL: {self.url}
         {self.episodes_str()}
         {self.personajes_str()}
         """)

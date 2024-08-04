@@ -9,3 +9,7 @@ class Pelicula:
     def show_atr(self):
         return f"Título: {self.title}\nEpisodio: {self.episode_id}\nFecha de lanzamiento: {self.release_date}\nCrawl de apertura: {self.opening_crawl}\nDirector: {self.director}"
     
+    def name_film(self):
+        name_film = f"Episodio {self.episode_id}: {self.title}"
+        return name_film
+    
