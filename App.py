@@ -5,6 +5,9 @@ from Especie import Especie
 from Pelicula import Pelicula
 from Personaje import Personaje
 from Droid import Droid
+from Starship import Starship
+from Vehicle import Vehicle
+from Weapon import Weapon
 
 class App:
     def __init__(self):
@@ -15,6 +18,7 @@ class App:
         self.planetas = []
         self.personajes = []
         self.armas = []
+        self.vehiculos = []
 
 ####################################################################################################################
 
@@ -319,7 +323,7 @@ class App:
         
         return personajes
     
-    def films_de_planetas(self, film_str):
+    def titulos_a_films(self, film_str):
         films = []
         nombres = film_str.split(",")
         
@@ -364,7 +368,7 @@ class App:
 
                     planeta.personajes = people
 
-                    planeta.films = self.films_de_planetas(films_str)
+                    planeta.films = self.titulos_a_films(films_str)
 
 
                     self.planetas.append(planeta)
@@ -422,13 +426,81 @@ class App:
         
 
     def cargar_naves_csv(self):
-        pass
+        
+        with open('csv/starships.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                id = row[0]
+                name = row[1]
+                model = row[2]
+                manufacturer = row[3]
+                cost_in_credits = row[4]
+                length = row[5]
+                crew = row[6]
+                passengers = row[7]
+                cargo_capacity = row[8]
+                consumables = row[9]
+                hyperdrive_rating = row[10]
+                mglt = row[11]
+                starship_class = row[12]
+                pilots = self.nombres_a_personajes(row[13])
+                films = self.titulos_a_films(row[14])
+                    
+                # Crear un objeto Especie y añadirlo a la lista
+                nave = Starship(id, name, model, manufacturer, cost_in_credits, length, crew, passengers, cargo_capacity, consumables, hyperdrive_rating, mglt, starship_class, pilots, films)
+                
+                self.naves.append(nave)
 
     def cargar_vehiculos_csv(self):
-        pass
+        
+        with open('csv/vehicles.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                
+                id = row[0]
+                name = row[1]
+                model = row[2]
+                manufacturer = row[3]
+                cost_in_credits = row[4]
+                length = row[5]
+                max_atmosphering_speed = row[6]
+                crew = row[7]
+                passengers = row[8]
+                cargo_capacity = row[9]
+                consumables = row[10]
+                vehicle_class = row[11]
+                pilots = self.nombres_a_personajes(row[12])
+                films = self.titulos_a_films(row[13])
+                    
+                # Crear un objeto Especie y añadirlo a la lista
+                vehiculo = Vehicle(id, name, model, manufacturer, cost_in_credits, length, max_atmosphering_speed, crew, passengers, cargo_capacity, consumables, vehicle_class, pilots, films)
+                
+                self.vehiculos.append(vehiculo)
 
     def cargar_armas_csv(self):
-        pass
+        
+        
+        with open('csv/weapons.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                
+                id = row[0]
+                name = row[1]
+                model = row[2]
+                manufacturer = row[3]
+                cost_in_credits = row[4]
+                length = row[5]
+                type = row[6]
+                description = row[7]
+                films = self.titulos_a_films(row[8])
+                    
+                # Crear un objeto Especie y añadirlo a la lista
+                arma = Weapon(id,name,model,manufacturer,cost_in_credits,length,type,description,films)
+                
+                self.armas.append(arma)
 
     def cargar_csv(self):
         self.cargar_films_csv()
