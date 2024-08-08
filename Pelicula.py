@@ -1,5 +1,6 @@
 class Pelicula:
     def __init__(self, uid, title, episode_id, release_date, opening_crawl, director):
+        self.uid = uid
         self.title = title
         self.episode_id = episode_id
         self.release_date = release_date

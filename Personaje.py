@@ -18,11 +18,15 @@ class Personaje:
         self.naves = naves
         self.vehiculos = vehiculos
 
+    def set_specie(self, specie):
+        self.specie = specie
+        
+
     def episodes_str(self):
         if len(self.episodes)!= 0:
             episodes_string = "Episodios en los que aparece este personaje:\n\n"
             for episode in self.episodes:
-                episodes_string += f"-{episode.name}\n"
+                episodes_string += f"-{episode.name_film()}\n"
             
             return episodes_string
         else:
@@ -68,12 +72,18 @@ class Personaje:
         {self.vehiculos_str()}
         """
     
+    def especie_str(self):
+        if self.specie == None:
+            return "Unknown"
+        else:
+            return self.specie.name
+    
     def mostrar(self):
         print(f"""
         - Nombre: {self.name}
         - Género: {self.gender}
-        - Planeta de origen: {self.homeworld}
-        - Especie: {self.specie}
+        - Planeta de origen: {self.homeworld.name}
+        - Especie: {self.especie_str()}
         {self.episodes_str()}
         {self.naves_str()}
         {self.vehiculos_str()}

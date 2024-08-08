@@ -4,6 +4,7 @@ from Planeta import Planeta
 from Especie import Especie
 from Pelicula import Pelicula
 from Personaje import Personaje
+from Droid import Droid
 
 class App:
     def __init__(self):
@@ -14,6 +15,10 @@ class App:
         self.planetas = []
         self.personajes = []
         self.armas = []
+
+####################################################################################################################
+
+    # CARGAR API
     
     def api(self, url):
         response = requests.get(url)
@@ -54,7 +59,7 @@ class App:
             if planeta.url == url:
                 return planeta
         return None
-
+                
 
     def cargar_especies_api(self):
         url = "https://www.swapi.tech/api/species"
@@ -83,9 +88,18 @@ class App:
                 people = []
                 episodes = []
 
+
+                especie = Especie(uid, name, classification, designation, average_height, average_lifespan, hair_colors, skin_colors, eye_colors, homeworld, language, created, edited, people, episodes, url)
+
                 # Crear objeto Especie y agregarlo a la lista de especies
-                self.especies.append(Especie(uid, name, classification, designation, average_height, average_lifespan, hair_colors, skin_colors, eye_colors, homeworld, language, created, edited, people, episodes, url))
+                self.especies.append(especie)
             url = especies_api.get("next")
+
+    def buscar_especie_planeta(self, planeta):
+        for especie in self.especies:
+            if especie.homeworld.name == planeta.name:
+                return especie
+        return None
 
     def cargar_personajes_api(self):
         url = "https://www.swapi.tech/api/people"
@@ -109,22 +123,16 @@ class App:
                 edited = dict['edited']
                 url = dict['url']
                 homeworld = self.buscar_planet_url(dict['homeworld'])
-
                 naves = []
                 vehiculos = []
                 episodes = []
-                especie = None
-
-                for esp in self.especies:
-                    if esp.homeworld == dict['homeworld']:
-                        especie = esp
-                        esp.people.append(name)
-                        break
+                especie = self.buscar_especie_planeta(homeworld)
                 
-                personaje = Personaje(uid, name, height, mass, hair_color, skin_color, eye_color, birth_year, gender, created, edited, homeworld, url, episodes, especie, naves, vehiculos)
+                personaje = Personaje(uid, name, height, mass,hair_color, skin_color, eye_color, birth_year, gender, created, edited, homeworld, url, episodes, especie, naves, vehiculos)
 
+                
                 for esp in self.especies:
-                    if esp.homeworld == dict['homeworld']:
+                    if esp.homeworld.url == dict['homeworld']:
                         esp.people.append(personaje)
                         break
 
@@ -134,7 +142,6 @@ class App:
                         break
                 
                 self.personajes.append(personaje)
-
 
             url = personajes_api.get("next")
          
@@ -179,11 +186,204 @@ class App:
 
     def cargar_api(self):
         self.cargar_planetas_api()
-        self.cargar_personajes_api()
         self.cargar_especies_api()
+        self.cargar_personajes_api()
         self.cargar_peliculas_api()
-        
+####################################################################################################################
 
+    # CARGAR CSV
+
+    def cargar_films_csv(self):
+        with open('csv/films.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                title = row[1]
+                episode_id = row[0]
+                uid = row[0]
+                release_date = row[2]
+                opening_crawl = row[4]
+                director = row[3]
+
+                # Crear objeto Pelicula y agregarlo a la lista de peliculas
+                self.peliculas.append(Pelicula(uid, title, episode_id, release_date, opening_crawl, director))
+
+    def buscar_planeta_nombre(self, nombre):
+        for planeta in self.planetas:
+            if planeta.name == nombre:
+                return planeta
+        return None
+    
+    def buscar_especie_nombre(self, nombre):
+        for especie in self.especies:
+            if especie.name == nombre:
+                return especie
+        return None
+    
+    def cargar_characters_csv(self):
+        uids_nombres_existentes = {(personaje.uid, personaje.name) for personaje in self.personajes}
+        
+        with open('csv/characters.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                uid = row[0]
+                name = row[1]
+                
+                # Verificar si el id y el name ya están en la lista
+                if (uid, name) not in uids_nombres_existentes:
+                    # Atributos de la especie usando índices de columnas
+                    specie = row[2]
+                    gender = row[3]
+                    height = row[4]
+                    mass = row[5]
+                    hair_color = row[6]
+                    eye_color = row[7]
+                    skin_color = row[8]
+                    year_born = row[9]
+                    homeworld = self.buscar_planeta_nombre(row[10])
+                    created, edited, url = None, None, None
+                    episodes, naves, vehiculos = [], [], []
+                    
+                
+                    # Crear un objeto Especie y añadirlo a la lista
+                    personaje = Personaje(uid, name, height, mass, hair_color, skin_color, eye_color, year_born, gender, created, edited, homeworld, url, episodes, specie, naves, vehiculos)
+
+                    self.personajes.append(personaje)
+
+                    # Actualizar la lista de uids y nombres existentes
+                    uids_nombres_existentes.add((uid, name))
+
+    def buscar_especie_droid(self):
+        for especie in self.especies:
+            if especie.name == "Droid":
+                return especie
+            
+    def buscar_film_nombre(self, nombres_str, films):
+        nombres = nombres_str.split(",")
+        for pelicula in self.peliculas:
+            for nombre in nombres:
+                if pelicula.title == nombre:
+                    films.append(pelicula)
+                    break     
+        
+        return films
+    
+    def cargar_droids_csv(self):
+        uids_nombres_existentes = {(personaje.uid, personaje.name) for personaje in self.personajes}
+        
+        with open('csv/droids.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                uid = row[0]
+                name = row[1]
+                
+                # Verificar si el id y el name ya están en la lista
+                if (uid, name) not in uids_nombres_existentes:
+                    # Atributos de la especie usando índices de columnas
+                    specie = self.buscar_especie_droid()
+                    model = row[2]
+                    manufacturer = row[3]
+                    height = row[4]
+                    mass = row[5]
+                    sensor_color = row[6]
+                    plating_color = row[7]
+                    primary_function = row[8]
+                    nombres_str = row[9]
+                    films = []
+                    self.buscar_film_nombre(nombres_str, films)
+
+                    # Crear un objeto Especie y añadirlo a la lista
+                    droid = Droid(uid, name, specie, model, manufacturer, height,mass, sensor_color, plating_color, primary_function, films)
+
+                    self.personajes.append(droid)
+
+                    # Actualizar la lista de uids y nombres existentes
+                    uids_nombres_existentes.add((uid, name))
+        
+    def cargar_personajes_csv(self):
+        self.cargar_characters_csv()
+        self.cargar_droids_csv()
+
+
+    def nombres_a_personajes(self, nombres_str):
+        personajes = []
+        nombres = nombres_str.split(",")
+
+        for nombre in nombres:
+            for personaje in self.personajes:
+                if personaje.name == nombre:
+                    personajes.append(personaje)
+                    break    
+        
+        return personajes
+    
+    def films_de_planetas(self, film_str):
+        films = []
+        nombres = film_str.split(",")
+        
+        for nombre in nombres:
+            for pelicula in self.peliculas:
+                if pelicula.title == nombre:
+                    films.append(pelicula)
+                    break
+
+        return films
+            
+
+    def cargar_planetas_csv(self):
+        uids_nombres_existentes = {(planeta.uid, planeta.name) for planeta in self.planetas}
+        
+        with open('csv/species.csv', mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Omitir la primera fila de encabezados
+            for row in reader:
+                uid = row[0]
+                name = row[1]
+                
+                # Verificar si el id y el name ya están en la lista
+                if (uid, name) not in uids_nombres_existentes:
+                    # Atributos de la especie usando índices de columnas
+                    diameter = row[2]
+                    rotation_period = row[3]
+                    orbital_period = row[4]
+                    gravity = row[5]
+                    population = row[6]
+                    climate = row[7]
+                    terrain = row[8]
+                    surface_water = row[9]
+                    residents = row[10]
+                    films_str = row[11]
+                    created, edited, url = None, None, None
+                    
+                    people = self.nombres_a_personajes(residents)
+
+                    # Crear un objeto Especie y añadirlo a la lista
+                    planeta = Planeta(uid, name, diameter, rotation_period, orbital_period, gravity, population, climate, terrain, surface_water, created, edited, url)
+
+                    planeta.personajes = people
+
+                    planeta.films = self.films_de_planetas(films_str)
+
+
+                    self.planetas.append(planeta)
+
+                    # Actualizar la lista de uids y nombres existentes
+                    uids_nombres_existentes.add((uid, name))
+
+    def personaje_en_especie(self, nombre_especie, personajes):
+        for personaje in self.personajes:
+            if isinstance(personaje.specie, Especie) and personaje.specie.name == nombre_especie:
+                personajes.append(personaje)
+        
+        return personajes
+    
+    def asignar_especies_a_personajes(self):
+        for personaje in self.personajes:
+            if type(personaje.specie) is str:
+                personaje.specie = self.buscar_especie_nombre(personaje.specie)
+        
     def cargar_especies_csv(self):
         uids_nombres_existentes = {(especie.uid, especie.name) for especie in self.especies}
         
@@ -209,24 +409,49 @@ class App:
                     created, edited, url = None, None, None
                     people, episodes = [], []
 
+                    self.personaje_en_especie(name, people)
+                    
                     # Crear un objeto Especie y añadirlo a la lista
                     especie = Especie(uid, name, classification, designation, average_height, average_lifespan, hair_colors, skin_colors, eye_colors, homeworld, language, created, edited, people, episodes, url)
                     self.especies.append(especie)
 
                     # Actualizar la lista de uids y nombres existentes
                     uids_nombres_existentes.add((uid, name))
+        
+        self.asignar_especies_a_personajes()
+        
 
     def cargar_naves_csv(self):
         pass
 
-    def cargar_csv(self):
+    def cargar_vehiculos_csv(self):
         pass
 
+    def cargar_armas_csv(self):
+        pass
+
+    def cargar_csv(self):
+        self.cargar_films_csv()
+        self.cargar_personajes_csv()
+        self.cargar_especies_csv()
+        self.cargar_naves_csv()
+        self.cargar_vehiculos_csv()
+        self.cargar_armas_csv()
+        
+####################################################################################################################
+
+    #FUNCION PRINCIPAL DE CARGA
+
+    #CARGAR API Y LUEGO CSV
     def cargar(self):
         print("\nEsperando...\n")
         self.cargar_api()
         self.cargar_csv()
         print("\n...Carga exitosa")
+
+####################################################################################################################
+
+    #FUNCIONALIDADES RELACIONADAS A LA API
 
     def listar_peliculas(self):
         for pelicula in self.peliculas:
@@ -255,8 +480,7 @@ class App:
             count = 1
             # Imprime la lista de personajes  encontrados numerados
             for personaje in resultadoPersonajes:
-                print(f"{count}. {personaje.name()}")
-                print("\n")
+                print(f"{count}. {personaje.name}")
                 count += 1
             
             while True:
@@ -287,6 +511,12 @@ class App:
             # Si no se encuentran personajes con el nombre ingresado, muestra un mensaje de error
             print("\nNo se encontraron personajes con el nombre ingresado.")
 
+####################################################################################################################
+
+    # FUNCIONALIDADES DE GRAFICOS Y ESTADISTICAS
+
+    def grafico_misiones_peliculas(self):
+        pass
     def grafico_personajes_planetas(self):
         pass
 
@@ -295,13 +525,20 @@ class App:
 
     def estadistica_naves(self):
         pass
-    
+
+####################################################################################################################
+
+    #FUNCIONALIDADES DE MISIONES
+
     def gestion_misiones(self):
         pass
 
     def guardar_misiones(self):
         pass
 
+####################################################################################################################
+
+    #FUNCIONALIDADES GENERALES
     def vaciar(self):
         """
         Vacía las listas de la instancia de la clase, eliminando todos los datos almacenados.
