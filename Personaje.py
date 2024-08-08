@@ -79,7 +79,7 @@ class Personaje:
             return self.specie.name
     
     def mostrar(self):
-        print(f"""
+        return f"""
         - Nombre: {self.name}
         - Género: {self.gender}
         - Planeta de origen: {self.homeworld.name}
@@ -87,7 +87,7 @@ class Personaje:
         {self.episodes_str()}
         {self.naves_str()}
         {self.vehiculos_str()}
-        """)
+        """
     
     
     
