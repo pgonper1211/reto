@@ -1,7 +1,7 @@
 from App import App
 
 def main(): 
-    app = App()
+    app = App() 
     app.iniciar()
 
 main()

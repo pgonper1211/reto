@@ -36,7 +36,7 @@ class Personaje:
         if len(self.naves)!= 0:
             naves_string = "Naves en las que aparece este personaje:\n\n"
             for nave in self.naves:
-                naves_string += f"-{nave}\n"
+                naves_string += f"-{nave.show_atr()}\n"
             
             return naves_string
         else:
@@ -46,7 +46,7 @@ class Personaje:
         if len(self.vehiculos)!= 0:
             vehiculos_string = "Vehículos en los que aparece este personaje:\n\n"
             for vehiculo in self.vehiculos:
-                vehiculos_string += f"-{vehiculo}\n"
+                vehiculos_string += f"-{vehiculo.show_atr()}\n"
             
             return vehiculos_string
         else:
@@ -77,12 +77,18 @@ class Personaje:
             return "Unknown"
         else:
             return self.specie.name
+        
+    def planeta_str(self):
+        if self.homeworld == None:
+            return "Unknown"
+        else:
+            return self.homeworld.name
     
     def mostrar(self):
         return f"""
         - Nombre: {self.name}
         - Género: {self.gender}
-        - Planeta de origen: {self.homeworld.name}
+        - Planeta de origen: {self.planeta_str()}
         - Especie: {self.especie_str()}
         {self.episodes_str()}
         {self.naves_str()}

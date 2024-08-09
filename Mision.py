@@ -30,3 +30,23 @@ class Mision:
 
     def show_atr(self):
         return f"Nombre: {self.nombre}\nPlaneta: {self.planeta.name}\nNave:\n{self.nave.show_atr()}\n\nArmas: {self.armas_str()}\n\n{self.integrantes_str()}\n"
+    
+    def armas_a_nombres(self):
+        armas = []
+        for arma in self.armas:
+            armas.append(arma.name)
+
+        return armas
+    
+    def integrantes_a_nombres(self):
+        integrantes = []
+        for integrante in self.integrantes:
+            integrantes.append(integrante.name)
+        
+        return integrantes
+    
+    def convert_str(self):
+        armas_str = ", ".join(self.armas_a_nombres())
+        integrantes_str = ", ".join(self.integrantes_a_nombres())
+        
+        return f"{self.nombre}, {self.planeta.name}, {self.nave.name}, '{armas_str}', '{integrantes_str}'"
