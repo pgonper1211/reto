@@ -1,8 +1,6 @@
 import requests
 import csv
-import numpy as np
-import pandas as pd
-from scipy import stats
+import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from Planeta import Planeta
@@ -436,6 +434,16 @@ class App:
             return hyperdrive
         else:
             return hyperdrive
+        
+
+    def nave_piloto(self, nave, nombres_str):
+        nombres = nombres_str.split(",")
+
+        for nombre in nombres:
+            for personaje in self.personajes:
+                if personaje.name == nombre:
+                    personaje.naves.append(nave)
+                    break
             
 
     def cargar_naves_csv(self):
@@ -466,10 +474,19 @@ class App:
                 # Crear un objeto Especie y añadirlo a la lista
                 nave = Starship(id,name,model,manufacturer,cost_in_credits,length,max_atmosphering_speed,crew,passengers,cargo_capacity,consumables,hyperdrive_rating,mglt,starship_class,pilots, films)
 
-                print(nave.max_atmosphering_speed)
-                print(nave.cost_in_credits)
-                print("")
+                self.nave_piloto(nave, row[14])
+
                 self.naves.append(nave)
+
+    
+    def personajes_vehiculos(self, nombres_str, vehiculo):
+        nombres = nombres_str.split(",")
+
+        for nombre in nombres:
+            for personaje in self.personajes:
+                if personaje.name == nombre:
+                    personaje.vehiculos.append(vehiculo)
+                    break
 
     def cargar_vehiculos_csv(self):
         
@@ -495,11 +512,13 @@ class App:
                     
                 # Crear un objeto Especie y añadirlo a la lista
                 vehiculo = Vehicle(id, name, model, manufacturer, cost_in_credits, length, max_atmosphering_speed, crew, passengers, cargo_capacity, consumables, vehicle_class, pilots, films)
+
+                self.personajes_vehiculos(row[12], vehiculo)
                 
                 self.vehiculos.append(vehiculo)
 
-    def cargar_armas_csv(self):
-        
+
+    def cargar_armas_csv(self):  
         
         with open('csv/weapons.csv', mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -602,12 +621,9 @@ class App:
             # Si no se encuentran personajes con el nombre ingresado, muestra un mensaje de error
             print("\nNo se encontraron personajes con el nombre ingresado.")
 
-####################################################################################################################
+###################################################################################################################
 
     # FUNCIONALIDADES DE GRAFICOS Y ESTADISTICAS
-
-    def grafico_misiones_peliculas(self):
-        pass
 
     def grafico_personajes_planetas(self):
         # Filtra planetas que tienen episodios
@@ -1175,21 +1191,18 @@ class App:
     #FUNCIONALIDADES GENERALES
 
     def guardar_misiones(self):
-        pass
+        with open("misiones.txt", 'w') as file:
+            for mision in self.misiones:
+                file.write(mision.convert_str() + "\n")
 
     def vaciar(self):
         """
         Vacía las listas de la instancia de la clase, eliminando todos los datos almacenados.
         """
-        self.especies = []
         self.misiones = []
-        self.naves = []
-        self.peliculas = []
-        self.planetas = []
-        self.personajes = []
-        self.armas = []
         
     def menu(self):
+        
         print("\n")
         while True:
             print("\n==================================")
@@ -1226,8 +1239,63 @@ class App:
                 print("\nAdiós.")
                 break
 
+
+    def nombres_a_armas(self, nombres_str):
+        armas = []
+        nombres = nombres_str.split(",")
+
+        for nombre in nombres:
+            for arma in self.armas:
+                if arma.name == nombre:
+                    armas.append(arma)
+                    break    
+        
+        return armas
+    
+
+    def nombre_a_nave(self, nombre):
+        for nave in self.naves:
+            if nave.name == nombre:
+                return nave
+            
+
+    def nombres_a_personajes2(self, nombres_str):
+        print(nombres_str)
+        personajes = []
+       
+        nombres = nombres_str.split(",")
+        print(nombres)
+
+        for nombre in nombres:
+            for personaje in self.personajes:
+                if personaje.name == nombre:
+                    personajes.append(personaje)
+                    break    
+        
+        return personajes
+
+
     def cargar_misiones(self):
-        pass
+        with open("misiones.txt", 'r') as file:
+            for linea in file:
+                # Usar regex para dividir respetando las comillas simples
+                partes = re.split(r",\s*(?=(?:[^']*'[^']*')*[^']*$)", linea.strip())
+                
+                # Extraer los datos
+                nombre = partes[0]
+                planeta = self.buscar_planeta_nombre(partes[1])
+                nave = self.nombre_a_nave(partes[2])
+                
+                # Quitar las comillas simples y convertir las listas de armas e integrantes
+                armas = self.nombres_a_armas(partes[3].strip("'"))
+                
+                integrantes = self.nombres_a_personajes2(partes[4].strip("'").replace(" ", ""))
+
+                # Crear el objeto Misiones y agregarlo a la lista
+                mision = Mision(nombre, planeta, nave, armas, integrantes)
+                
+                self.misiones.append(mision)
+        
 
     def iniciar(self):
         self.cargar()
