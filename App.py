@@ -903,6 +903,148 @@ class App:
         else:
             print("\nNo se puede crear más de 5 misiones.")
 
+
+    def agregar_armas(self, armas):
+        if len(armas) < 7:
+            print("\n============================================")
+            print("              ARMAS DISPONIBLES")
+            print("============================================")
+            
+            count = 1
+            
+            for arma in self.armas:
+                print(f"{count}. {arma.name}")
+                count += 1
+
+            while len(armas) < 7:
+                print("\n1. Añadir Arma\n2. Salir")
+                
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                    
+                if opcion == "1":
+                    opcion_armas = input("\nIngrese el numero de arma que desea agreagar a la mision: ")
+                    while (not opcion_armas.isnumeric()) or (not int(opcion_armas) in range(1, len(self.armas)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_armas = input("\nIngrese el numero de arma que desea agreagar a la mision: ")
+                    
+                    index = int(opcion_armas) - 1
+
+                    arma = self.armas[index]
+
+                    armas.append(arma)        
+                else:
+                    break     
+        else:
+            print("\nNo se puede agregar más de 7 armas.")
+
+    def eliminar_armas(self, armas):
+
+        if len(armas) > 0:
+        
+            count = 1
+            for arma in armas:
+                print(f"{count}. {arma.name}")
+                count += 1
+
+            while armas > 0:
+                print("\n1. Eliminar Arma\n2. Salir")
+                    
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                        
+                if opcion == "1":
+                    opcion_armas = input("\nIngrese el numero de arma que desea eliminar de la mision: ")
+                    while (not opcion_armas.isnumeric()) or (not int(opcion_armas) in range(1, len(armas)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_armas = input("\nIngrese el numero de arma que desea eliminar de la mision: ")
+                    
+                    index = int(opcion_armas) - 1
+
+                    armas.pop(index)       
+                else:
+                    break
+        else:
+            print("\nNo hay armas para eliminar.")
+        
+
+    def agregar_integrantes(self, integrantes):
+        
+        if len(integrantes) < 7:
+            print("\n============================================")
+            print("         INTEGRANTES DISPONIBLES")
+            print("============================================")
+            
+            count = 1
+            
+            for personaje in self.personajes:
+                print(f"{count}. {personaje.name}")
+                count += 1
+
+            while len(integrantes) < 7:
+                print("\n1. Añadir personaje\n2. Salir")
+                
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                    
+                if opcion == "1":
+                    opcion_integrante = input("\nIngrese el numero de integrante que desea agreagar a la mision: ")
+                    while (not opcion_integrante.isnumeric()) or (not int(opcion_integrante) in range(1, len(self.personajes)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_integrante = input("\nIngrese el numero de integrante que desea agreagar a la mision: ")
+                    
+                    index = int(opcion_integrante) - 1
+
+                    integrante = self.personajes[index]
+
+                    integrantes.append(integrante)        
+                else:
+                    break
+
+        else:
+            print("\nNo se puede agregar más de 7 integrantes.")
+
+    def eliminar_integrantes(self, integrantes):
+            
+        if len(integrantes) > 0:
+            count = 1
+                
+            for personaje in integrantes:
+                print(f"{count}. {personaje.name}")
+                count += 1
+
+            while len(integrantes) < 7:
+                print("\n1. Eliminar Integrante\n2. Salir")
+                
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                    
+                if opcion == "1":
+                    opcion_integrante = input("\nIngrese el numero de integrante que desea eliminar de la mision: ")
+                    while (not opcion_integrante.isnumeric()) or (not int(opcion_integrante) in range(1, len(integrantes)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_integrante = input("\nIngrese el numero de integrante que desea eliminar de la mision: ")
+                    
+                    index = int(opcion_integrante) - 1
+                    integrantes.pop(index)        
+                else:
+                    break 
+        else:
+            print("\nNo hay integrantes para eliminar.")
+
+
     def modificar_mision(self):
         print("\n============================================")
         print("            MODIFICAR MISIONES")
@@ -911,30 +1053,64 @@ class App:
         count = 1
         
         for mision in self.misiones:
-            print(f"{count}. {mision.name}")
+            print(f"{count}. {mision.nombre}")
             count += 1
 
+        opcion_mision = input("\nIngrese el numero de la mision que desea modificar: ")
+        while (not opcion_mision.isnumeric()) or (not int(opcion_mision) in range(1, len(self.misiones)+1)):
+            print("Error!!! Dato Inválido.")
+            opcion_mision = input("\nIngrese el numero de la mision que desea modificar: ")
+        
+        index = int(opcion_mision) - 1
+        
+        mision_modif = self.misiones[index]
 
         while True:
-            print("\n1. Ver detalle de una mision\n2. Salir")
-            
-            # Solicita al usuario que ingrese una opción y valida que sea un número válido
-            opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
-            while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
-                print("Error!!! Dato Inválido.")
-                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
-                
-            if opcion == "1":
-                opcion_mision = input("\nIngrese el numero de la mision para visualizar sus detalles: ")
-                while (not opcion_mision.isnumeric()) or (not int(opcion_mision) in range(1, len(self.misiones)+1)):
-                    print("Error!!! Dato Inválido.")
-                    opcion_mision = input("\nIngrese el numero de la mision para visualizar sus detalles: ")
-                
-                index = int(opcion_mision) - 1
+            print("\nQue caracteristica deseas modificar?\n1. Nombre\n2. Planeta\n3. Nave\n4. Armas\n5. Integrantes\n6. Salir")
 
-                print(self.personajes[index].show_atr())      
+            opcion_modificacion = input("\nIngrese el numero de la acción que desea realizar: ")
+            while (not opcion_modificacion.isnumeric()) or (not int(opcion_modificacion) in range(1, 7)):
+                print("Error!!! Dato Inválido.")
+                opcion_modificacion = input("\nIngrese el numero de la acción que desea realizar: ")
+
+            if opcion_modificacion == "1":
+                nombre = input("Ingrese el nuevo nombre: ")
+                mision_modif.nombre = nombre
+            elif opcion_modificacion == "2":
+                planeta = self.elegir_planeta()
+                mision_modif.planeta = planeta
+            elif opcion_modificacion == "3":
+                nave = self.elegir_nave()
+                mision_modif.nave = nave
+            elif opcion_modificacion == "4":
+                print("1. Agregar armas\n2. Eliminar armas\n3. Salir")
+                
+                opcion_armas = input("\nIngrese el número de la acción que desea realizar: ")
+                while (not opcion_armas.isnumeric()) or (not int(opcion_armas) in range(1, 4)):
+                    print("Error!!! Dato Inválido.")
+                    opcion_armas = input("\nIngrese el número de la acción que desea realizar: ")
+                
+                if opcion_armas == "1":
+                    self.agregar_armas(mision_modif.armas)
+                elif opcion_armas == "2":
+                    self.eliminar_armas(mision_modif.armas)
+
+            elif opcion_modificacion == "5":
+                print("1. Agregar Integrantes\n2. Eliminar Integrantes\n3. Salir")
+                
+                opcion_integrantes = input("\nIngrese el número de la acción que desea realizar: ")
+                while (not opcion_integrantes.isnumeric()) or (not int(opcion_integrantes) in range(1, 4)):
+                    print("Error!!! Dato Inválido.")
+                    opcion_integrantes = input("\nIngrese el número de la acción que desea realizar: ")
+                
+                if opcion_integrantes == "1":
+                    self.agregar_integrantes(mision_modif.integrantes)
+                elif opcion_integrantes == "2":
+                    self.eliminar_integrantes(mision_modif.integrantes)
             else:
-                break 
+                break
+            
+        print("\nMision modificada exitosamente.\n")
 
 
     def visualizar_mision(self):
@@ -966,7 +1142,7 @@ class App:
                 
                 index = int(opcion_mision) - 1
 
-                print(self.personajes[index].show_atr())      
+                print(self.misiones[index].show_atr())      
             else:
                 break 
     

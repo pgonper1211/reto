@@ -29,4 +29,4 @@ class Mision:
 
 
     def show_atr(self):
-        return f"Nombre: {self.nombre}\nPlaneta: {self.planeta.name}\nNave:\n{self.nave.show_atr()}\n\nArmas: {self.armas_str()}\n\nIntegrantes: {self.integrantes}\n"
+        return f"Nombre: {self.nombre}\nPlaneta: {self.planeta.name}\nNave:\n{self.nave.show_atr()}\n\nArmas: {self.armas_str()}\n\n{self.integrantes_str()}\n"
