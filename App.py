@@ -1,6 +1,9 @@
 import requests
 import csv
-import matplotlib as plt
+import numpy as np
+import pandas as pd
+from scipy import stats
+import matplotlib.pyplot as plt
 from collections import defaultdict
 from Planeta import Planeta
 from Especie import Especie
@@ -426,7 +429,14 @@ class App:
                     uids_nombres_existentes.add((uid, name))
         
         self.asignar_especies_a_personajes()
-        
+
+    def guardar_hyperdrive_rating(self, hyperdrive):   
+        if hyperdrive == "":
+            hyperdrive = 0.0
+            return hyperdrive
+        else:
+            return hyperdrive
+            
 
     def cargar_naves_csv(self):
         
@@ -440,19 +450,25 @@ class App:
                 manufacturer = row[3]
                 cost_in_credits = row[4]
                 length = row[5]
-                crew = row[6]
-                passengers = row[7]
-                cargo_capacity = row[8]
-                consumables = row[9]
-                hyperdrive_rating = row[10]
-                mglt = row[11]
-                starship_class = row[12]
-                pilots = self.nombres_a_personajes(row[13])
-                films = self.titulos_a_films(row[14])
+                max_atmosphering_speed = row[6]
+                crew = row[7]
+                passengers = row[8]
+                cargo_capacity = row[9]
+                consumables = row[10]
+                hyperdrive_rating = self.guardar_hyperdrive_rating(row[11])
+                mglt = row[12]
+                starship_class = row[13]
+                pilots = self.nombres_a_personajes(row[14])
+                films = self.titulos_a_films(row[15])
+
+                
                     
                 # Crear un objeto Especie y añadirlo a la lista
-                nave = Starship(id, name, model, manufacturer, cost_in_credits, length, crew, passengers, cargo_capacity, consumables, hyperdrive_rating, mglt, starship_class, pilots, films)
-                
+                nave = Starship(id,name,model,manufacturer,cost_in_credits,length,max_atmosphering_speed,crew,passengers,cargo_capacity,consumables,hyperdrive_rating,mglt,starship_class,pilots, films)
+
+                print(nave.max_atmosphering_speed)
+                print(nave.cost_in_credits)
+                print("")
                 self.naves.append(nave)
 
     def cargar_vehiculos_csv(self):
@@ -594,25 +610,158 @@ class App:
         pass
 
     def grafico_personajes_planetas(self):
+        # Filtra planetas que tienen episodios
         planetas_con_episodios = [planeta for planeta in self.planetas if len(planeta.episodes) > 0]
 
+        # Inicializar el defaultdict con un valor inicial para 'Unknown'
         personajes_por_planeta = defaultdict(int)
+        personajes_por_planeta['Unknown'] = 0
 
+        # Contar personajes por planeta
         for personaje in self.personajes:
-            for planeta in planetas_con_episodios:
-                if personaje.homeworld.name == planeta.name:
-                    personajes_por_planeta[planeta.name] += 1
+            if isinstance(personaje, Personaje):
+                if personaje.homeworld is None:
+                    personajes_por_planeta['Unknown'] += 1
+                else:
+                    for planeta in planetas_con_episodios:
+                        if personaje.homeworld.name == planeta.name:
+                            personajes_por_planeta[planeta.name] += 1
 
-        print(personajes_por_planeta)
+        # Preparar datos para el gráfico
+        planeta_names = list(personajes_por_planeta.keys())
+        counts = list(personajes_por_planeta.values())
 
+        # Crear el gráfico
+        plt.figure(figsize=(80, 5))
+        plt.bar(planeta_names, counts, color='skyblue')
+        plt.xlabel('Planetas')
+        plt.ylabel('Número de Personajes')
+        plt.title('Número de personajes nacidos en cada planeta')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.show()
 
     def graficos_naves(self):
-        pass
+        # Preparar los datos
+        nombres = [nave.name for nave in self.naves]
+        longitudes = [float(nave.length) if nave.length else 0 for nave in self.naves]
+        capacidades_carga = [float(nave.cargo_capacity) if nave.cargo_capacity else 0 for nave in self.naves]
+        
+        clasificaciones_hiperimpulsor = []
+        for nave in self.naves:
+            if nave.hyperdrive_rating is not None:
+                clasificaciones_hiperimpulsor.append(float(nave.hyperdrive_rating))
+
+        mglt = [float(nave.mglt) if nave.mglt else 0 for nave in self.naves]
+
+        while True:
+            # Menú de opciones
+            print("\nSeleccione el gráfico que desea ver:\n1. Longitud de la nave\n2. Capacidad de carga\n3. Clasificación de hiperimpulsor\n4. MGLT (Modern Galactic Light Time)\n5. Salir")
+
+            opcion = input("Ingrese el número de la opción deseada: ")
+            while (not opcion.isnumeric()) or (not int(opcion) in range(1, 6)):
+                print("Error!!! Dato Inválido.")
+                opcion = input("Ingrese el número de la opción deseada: ")
+
+            # Mostrar el gráfico correspondiente o salir
+            if opcion == '1':
+                plt.figure(figsize=(15, 7))  # Tamaño más razonable
+                plt.bar(nombres, longitudes, color='skyblue')
+                plt.title('Longitud de la nave', fontsize=16)
+                plt.ylabel('Longitud (metros)', fontsize=14)
+            elif opcion == '2':
+                plt.figure(figsize=(15, 7))
+                plt.bar(nombres, capacidades_carga, color='lightgreen')
+                plt.title('Capacidad de carga', fontsize=16)
+                plt.ylabel('Capacidad de carga (kg)', fontsize=14)
+            elif opcion == '3':
+                plt.figure(figsize=(15, 7))
+                plt.bar(nombres, clasificaciones_hiperimpulsor, color='lightcoral')
+                plt.title('Clasificación de hiperimpulsor', fontsize=16)
+                plt.ylabel('Clasificación de hiperimpulsor', fontsize=14)
+            elif opcion == '4':
+                plt.figure(figsize=(15, 7))
+                plt.bar(nombres, mglt, color='lightseagreen')
+                plt.title('MGLT (Modern Galactic Light Time)', fontsize=16)
+                plt.ylabel('MGLT', fontsize=14) 
+            else:
+                break
+
+            plt.xticks(rotation=90, fontsize=12)
+            plt.yticks(fontsize=12)
+            plt.tight_layout()
+            plt.show()
 
     def estadistica_naves(self):
-        pass
+        # Preparar los datos
+        clases_naves = {}
+        
+        for nave in self.naves:
+            clase = nave.starship_class
+            
+            if clase not in clases_naves:
+                clases_naves[clase] = {
+                    "hyperdrive_rating": [],
+                    "mglt": [],
+                    "max_atmosphering_speed": [],
+                    "cost_in_credits": []
+                }
+            
+            if nave.hyperdrive_rating is not None:
+                clases_naves[clase]["hyperdrive_rating"].append(float(nave.hyperdrive_rating))
+            
+            if nave.mglt is not None and nave.mglt != "":
+                clases_naves[clase]["mglt"].append(float(nave.mglt))
+            
+            if nave.max_atmosphering_speed is not None and nave.max_atmosphering_speed != "":
+                clases_naves[clase]["max_atmosphering_speed"].append(float(nave.max_atmosphering_speed))
+            
+            if nave.cost_in_credits is not None and nave.cost_in_credits != "" :
+                clases_naves[clase]["cost_in_credits"].append(float(nave.cost_in_credits))
 
-####################################################################################################################
+        # Funciones auxiliares para cálculos de estadísticas
+        def calcular_promedio(valores):
+            return sum(valores) / len(valores) if valores else None
+
+        def calcular_moda(valores):
+            if not valores:
+                return None
+            frecuencia = {}
+            for v in valores:
+                if v in frecuencia:
+                    frecuencia[v] += 1
+                else:
+                    frecuencia[v] = 1
+            moda = max(frecuencia, key=frecuencia.get)
+            return moda
+
+        def calcular_maximo(valores):
+            return max(valores) if valores else None
+
+        def calcular_minimo(valores):
+            return min(valores) if valores else None
+
+        # Mostrar estadísticas por clase de nave
+        print(f"{'Clase de Nave':<30} {'Variable':<25} {'Promedio':<10} {'Moda':<10} {'Máximo':<10} {'Mínimo':<10}")
+        print("="*100)
+
+        for clase, datos in clases_naves.items():
+            for variable, valores in datos.items():
+                promedio = calcular_promedio(valores)
+                moda = calcular_moda(valores)
+                maximo = calcular_maximo(valores)
+                minimo = calcular_minimo(valores)
+
+                # Usar "-" si el valor es None
+                promedio_str = f"{promedio:<10.2f}" if promedio is not None else "-"
+                moda_str = f"{moda:<10.2f}" if moda is not None else "-"
+                maximo_str = f"{maximo:<10.2f}" if maximo is not None else "-"
+                minimo_str = f"{minimo:<10.2f}" if minimo is not None else "-"
+                
+                print(f"{clase:<30} {variable:<25} {promedio_str} {moda_str} {maximo_str} {minimo_str}")
+
+
+#################################################################################################################
 
     #FUNCIONALIDADES DE MISIONES
 
@@ -754,6 +903,148 @@ class App:
         else:
             print("\nNo se puede crear más de 5 misiones.")
 
+
+    def agregar_armas(self, armas):
+        if len(armas) < 7:
+            print("\n============================================")
+            print("              ARMAS DISPONIBLES")
+            print("============================================")
+            
+            count = 1
+            
+            for arma in self.armas:
+                print(f"{count}. {arma.name}")
+                count += 1
+
+            while len(armas) < 7:
+                print("\n1. Añadir Arma\n2. Salir")
+                
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                    
+                if opcion == "1":
+                    opcion_armas = input("\nIngrese el numero de arma que desea agreagar a la mision: ")
+                    while (not opcion_armas.isnumeric()) or (not int(opcion_armas) in range(1, len(self.armas)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_armas = input("\nIngrese el numero de arma que desea agreagar a la mision: ")
+                    
+                    index = int(opcion_armas) - 1
+
+                    arma = self.armas[index]
+
+                    armas.append(arma)        
+                else:
+                    break     
+        else:
+            print("\nNo se puede agregar más de 7 armas.")
+
+    def eliminar_armas(self, armas):
+
+        if len(armas) > 0:
+        
+            count = 1
+            for arma in armas:
+                print(f"{count}. {arma.name}")
+                count += 1
+
+            while armas > 0:
+                print("\n1. Eliminar Arma\n2. Salir")
+                    
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                        
+                if opcion == "1":
+                    opcion_armas = input("\nIngrese el numero de arma que desea eliminar de la mision: ")
+                    while (not opcion_armas.isnumeric()) or (not int(opcion_armas) in range(1, len(armas)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_armas = input("\nIngrese el numero de arma que desea eliminar de la mision: ")
+                    
+                    index = int(opcion_armas) - 1
+
+                    armas.pop(index)       
+                else:
+                    break
+        else:
+            print("\nNo hay armas para eliminar.")
+        
+
+    def agregar_integrantes(self, integrantes):
+        
+        if len(integrantes) < 7:
+            print("\n============================================")
+            print("         INTEGRANTES DISPONIBLES")
+            print("============================================")
+            
+            count = 1
+            
+            for personaje in self.personajes:
+                print(f"{count}. {personaje.name}")
+                count += 1
+
+            while len(integrantes) < 7:
+                print("\n1. Añadir personaje\n2. Salir")
+                
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                    
+                if opcion == "1":
+                    opcion_integrante = input("\nIngrese el numero de integrante que desea agreagar a la mision: ")
+                    while (not opcion_integrante.isnumeric()) or (not int(opcion_integrante) in range(1, len(self.personajes)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_integrante = input("\nIngrese el numero de integrante que desea agreagar a la mision: ")
+                    
+                    index = int(opcion_integrante) - 1
+
+                    integrante = self.personajes[index]
+
+                    integrantes.append(integrante)        
+                else:
+                    break
+
+        else:
+            print("\nNo se puede agregar más de 7 integrantes.")
+
+    def eliminar_integrantes(self, integrantes):
+            
+        if len(integrantes) > 0:
+            count = 1
+                
+            for personaje in integrantes:
+                print(f"{count}. {personaje.name}")
+                count += 1
+
+            while len(integrantes) < 7:
+                print("\n1. Eliminar Integrante\n2. Salir")
+                
+                # Solicita al usuario que ingrese una opción y valida que sea un número válido
+                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
+                    print("Error!!! Dato Inválido.")
+                    opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
+                    
+                if opcion == "1":
+                    opcion_integrante = input("\nIngrese el numero de integrante que desea eliminar de la mision: ")
+                    while (not opcion_integrante.isnumeric()) or (not int(opcion_integrante) in range(1, len(integrantes)+1)):
+                        print("Error!!! Dato Inválido.")
+                        opcion_integrante = input("\nIngrese el numero de integrante que desea eliminar de la mision: ")
+                    
+                    index = int(opcion_integrante) - 1
+                    integrantes.pop(index)        
+                else:
+                    break 
+        else:
+            print("\nNo hay integrantes para eliminar.")
+
+
     def modificar_mision(self):
         print("\n============================================")
         print("            MODIFICAR MISIONES")
@@ -762,30 +1053,64 @@ class App:
         count = 1
         
         for mision in self.misiones:
-            print(f"{count}. {mision.name}")
+            print(f"{count}. {mision.nombre}")
             count += 1
 
+        opcion_mision = input("\nIngrese el numero de la mision que desea modificar: ")
+        while (not opcion_mision.isnumeric()) or (not int(opcion_mision) in range(1, len(self.misiones)+1)):
+            print("Error!!! Dato Inválido.")
+            opcion_mision = input("\nIngrese el numero de la mision que desea modificar: ")
+        
+        index = int(opcion_mision) - 1
+        
+        mision_modif = self.misiones[index]
 
         while True:
-            print("\n1. Ver detalle de una mision\n2. Salir")
-            
-            # Solicita al usuario que ingrese una opción y valida que sea un número válido
-            opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
-            while (not opcion.isnumeric()) or (not int(opcion) in range(1, 3)):
-                print("Error!!! Dato Inválido.")
-                opcion = input("\nIngrese el número correspondiente a la acción que desea realizar: ")
-                
-            if opcion == "1":
-                opcion_mision = input("\nIngrese el numero de la mision para visualizar sus detalles: ")
-                while (not opcion_mision.isnumeric()) or (not int(opcion_mision) in range(1, len(self.misiones)+1)):
-                    print("Error!!! Dato Inválido.")
-                    opcion_mision = input("\nIngrese el numero de la mision para visualizar sus detalles: ")
-                
-                index = int(opcion_mision) - 1
+            print("\nQue caracteristica deseas modificar?\n1. Nombre\n2. Planeta\n3. Nave\n4. Armas\n5. Integrantes\n6. Salir")
 
-                print(self.personajes[index].show_atr())      
+            opcion_modificacion = input("\nIngrese el numero de la acción que desea realizar: ")
+            while (not opcion_modificacion.isnumeric()) or (not int(opcion_modificacion) in range(1, 7)):
+                print("Error!!! Dato Inválido.")
+                opcion_modificacion = input("\nIngrese el numero de la acción que desea realizar: ")
+
+            if opcion_modificacion == "1":
+                nombre = input("Ingrese el nuevo nombre: ")
+                mision_modif.nombre = nombre
+            elif opcion_modificacion == "2":
+                planeta = self.elegir_planeta()
+                mision_modif.planeta = planeta
+            elif opcion_modificacion == "3":
+                nave = self.elegir_nave()
+                mision_modif.nave = nave
+            elif opcion_modificacion == "4":
+                print("1. Agregar armas\n2. Eliminar armas\n3. Salir")
+                
+                opcion_armas = input("\nIngrese el número de la acción que desea realizar: ")
+                while (not opcion_armas.isnumeric()) or (not int(opcion_armas) in range(1, 4)):
+                    print("Error!!! Dato Inválido.")
+                    opcion_armas = input("\nIngrese el número de la acción que desea realizar: ")
+                
+                if opcion_armas == "1":
+                    self.agregar_armas(mision_modif.armas)
+                elif opcion_armas == "2":
+                    self.eliminar_armas(mision_modif.armas)
+
+            elif opcion_modificacion == "5":
+                print("1. Agregar Integrantes\n2. Eliminar Integrantes\n3. Salir")
+                
+                opcion_integrantes = input("\nIngrese el número de la acción que desea realizar: ")
+                while (not opcion_integrantes.isnumeric()) or (not int(opcion_integrantes) in range(1, 4)):
+                    print("Error!!! Dato Inválido.")
+                    opcion_integrantes = input("\nIngrese el número de la acción que desea realizar: ")
+                
+                if opcion_integrantes == "1":
+                    self.agregar_integrantes(mision_modif.integrantes)
+                elif opcion_integrantes == "2":
+                    self.eliminar_integrantes(mision_modif.integrantes)
             else:
-                break 
+                break
+            
+        print("\nMision modificada exitosamente.\n")
 
 
     def visualizar_mision(self):
@@ -817,7 +1142,7 @@ class App:
                 
                 index = int(opcion_mision) - 1
 
-                print(self.personajes[index].show_atr())      
+                print(self.misiones[index].show_atr())      
             else:
                 break 
     
@@ -845,7 +1170,7 @@ class App:
                 print("Has salido del modulo de gestio de misiones.")
                 break
 
-####################################################################################################################
+#################################################################################################################
 
     #FUNCIONALIDADES GENERALES
 
