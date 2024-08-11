@@ -34,5 +34,5 @@ class Droid:
         - Color del sensor: {self.sensor_color}
         - Color de la plataforma: {self.plating_color}
         - Función principal: {self.primary_function}
-        {self.films_str}
+        {self.films_str()}
         """
