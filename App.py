@@ -229,7 +229,7 @@ class App:
         return None
     
     def cargar_characters_csv(self):
-        uids_nombres_existentes = {(personaje.uid, personaje.name) for personaje in self.personajes}
+        uids_nombres_existentes = {personaje.name for personaje in self.personajes}
         
         with open('csv/characters.csv', mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -239,7 +239,7 @@ class App:
                 name = row[1]
                 
                 # Verificar si el id y el name ya están en la lista
-                if (uid, name) not in uids_nombres_existentes:
+                if name not in uids_nombres_existentes:
                     # Atributos de la especie usando índices de columnas
                     specie = row[2]
                     gender = row[3]
@@ -277,8 +277,14 @@ class App:
         
         return films
     
+    def buscar_nombre_personajes(self, nombres, nombre_nuevo):
+        for nombre in nombres:
+            if nombre == nombre_nuevo:
+                return True
+        return False
+    
     def cargar_droids_csv(self):
-        uids_nombres_existentes = {(personaje.uid, personaje.name) for personaje in self.personajes}
+        uids_nombres_existentes = [personaje.name for personaje in self.personajes]
         
         with open('csv/droids.csv', mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -288,7 +294,7 @@ class App:
                 name = row[1]
                 
                 # Verificar si el id y el name ya están en la lista
-                if (uid, name) not in uids_nombres_existentes:
+                if not self.buscar_nombre_personajes(uids_nombres_existentes, name):
                     # Atributos de la especie usando índices de columnas
                     specie = self.buscar_especie_droid()
                     model = row[2]
@@ -308,12 +314,12 @@ class App:
                     self.personajes.append(droid)
 
                     # Actualizar la lista de uids y nombres existentes
-                    uids_nombres_existentes.add((uid, name))
+                    uids_nombres_existentes.append(name)
+
         
     def cargar_personajes_csv(self):
         self.cargar_characters_csv()
         self.cargar_droids_csv()
-
 
     def nombres_a_personajes(self, nombres_str):
         personajes = []
@@ -552,11 +558,23 @@ class App:
 
     #FUNCION PRINCIPAL DE CARGA
 
+    def borrar_personajes_repetidos(self):
+        personajes_unicos = []
+        nombres_encontrados = set()
+
+        for personaje in self.personajes:
+            if personaje.name not in nombres_encontrados:
+                personajes_unicos.append(personaje)
+                nombres_encontrados.add(personaje.name)
+        
+        self.personajes = personajes_unicos
+           
     #CARGAR API Y LUEGO CSV
     def cargar(self):
         print("\nEsperando...\n")
         self.cargar_api()
         self.cargar_csv()
+        self.borrar_personajes_repetidos()
         print("\n...Carga exitosa")
 
 ####################################################################################################################
@@ -582,6 +600,8 @@ class App:
 
         # Busca en la lista de personajes aquellos que contienen el nombre ingresado
         for personaje in self.personajes:
+            print(personaje.name)
+            print("")
             if nombre in personaje.name.lower():
                 resultadoPersonajes.append(personaje)
         
